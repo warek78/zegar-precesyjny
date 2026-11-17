@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Astronomiczne Koło Precesyjne – Wersja Patentowa v5</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 22px; }
+        .info { font-size: 16px; color: #7f8c8d; margin-bottom: 20px; font-weight: bold; }
+        
+        .wheel-box {
+            position: relative;
+            width: 490px;
+            height: 490px;
+            margin: 15px auto;
+        }
+        
+        .cardinal-cross {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .cardinal-cross svg {
+            width: 490px;
+            height: 490px;
+            pointer-events: none;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 70px;
+            left: 70px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            transition: transform 0.1s linear;
+            z-index: 5;
+        }
+        
+        .label {
+            position: absolute;
+            font-weight: bold;
+            color: #c0392b;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        .label.wiosna { top: 50%; left: -50px; transform: translateY(-50%); text-align: center; }
+        .label.jesien { top: 50%; right: -50px; transform: translateY(-50%); text-align: center; }
+        .label.lato { top: -20px; left: 50%; transform: translateX(-50%); }
+        .label.zima { bottom: -20px; left: 50%; transform: translateX(-50%); }
+
+        .controls { margin-top: 20px; }
+        input[type=range] { width: 320px; cursor: pointer; }
+
+        .paska-legenda {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 11px;
+            color: #555;
+        }
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legenda-color {
+            width: 11px;
+            height: 11px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ASTRONOMICZNE KOŁO PRECESYJNE</h1>
+    <div id="status" class="info">Rok: 2000 n.e. | Przesunięcie: 0° | Czas: 0 lat</div>
+
+    <div class="wheel-box">
+        <!-- NIERUCHOME PUNKTY ODNIESIENIA NA ZEWNĄTRZ -->
+        <div class="cardinal-cross">
+            <svg>
+                <line x1="15" y1="245" x2="475" y2="245" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="5,3" />
+                <line x1="245" y1="15" x2="245" y2="475" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="5,3" />
+                <polygon points="65,238 65,252 48,245" style="fill:#c0392b;" />
+                <polygon points="238,65 252,65 245,48" style="fill:#c0392b;" />
+            </svg>
+            <div class="label wiosna">Równonoc<br>Jesienna</div>
+            <div class="label lato">Przesilenie Letnie</div>
+            <div class="label jesien">Równonoc<br>Wiosenna<br>(Wskaźnik)</div>
+            <div class="label zima">Przesilenie Zimowe</div>
+        </div>
+
+        <!-- TARCZA ZODIAKALNA (350x350) -->
+        <canvas id="zodiacWheel" width="350" height="350"></canvas>
+    </div>
+
+    <div class="controls">
+        <label for="angleSlider" style="font-weight: bold; color: #2c3e50; font-size: 13px;">Kręć kołem (W lewo = przyszłość / W prawo = przeszłość): </label><br><br>
+        <input type="range" id="angleSlider" min="-360" max="360" value="0" step="0.1">
+    </div>
+
+    <div class="paska-legenda">
+        <div class="legenda-item"><div class="legenda-color" style="background: #3498db;"></div>Polaris</div>
+        <div class="legenda-item"><div class="legenda-color" style="background: #9b59b6;"></div>Errai</div>
+        <div class="legenda-item"><div class="legenda-color" style="background: #2ecc71;"></div>Alderamin</div>
+        <div class="legenda-item"><div class="legenda-color" style="background: #f1c40f;"></div>Wega</div>
+        <div class="legenda-item"><div class="legenda-color" style="background: #e74c3c;"></div>Thuban</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('zodiacWheel');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('angleSlider');
+    const statusText = document.getElementById('status');
+
+    const zodiakDane = [
+        { nazwa: "Byk", dlugosc: 36.7, kolor: "#eaeded" },
+        { nazwa: "Baran", dlugosc: 24.7, kolor: "#ecf0f1" },
+        { nazwa: "Ryby", dlugosc: 36.6, kolor: "#f9ebee" },
+        { nazwa: "Wodnik", dlugosc: 24.6, kolor: "#fef9e7" },
+        { nazwa: "Koziorożec", dlugosc: 28.0, kolor: "#fdead6" }, 
+        { nazwa: "Strzelec", dlugosc: 33.4, kolor: "#f5eef8" },
+        { nazwa: "Wężownik", dlugosc: 18.6, kolor: "#e8daef" },
+        { nazwa: "Skorpion", dlugosc: 6.7, kolor: "#eaf2f8" },
+        { nazwa: "Waga", dlugosc: 23.2, kolor: "#d1f2eb" },
+        { nazwa: "Panna", dlugosc: 44.0, kolor: "#e8f8f5" },
+        { nazwa: "Lew", dlugosc: 35.7, kolor: "#d6eaf8" },
+        { nazwa: "Rak", dlugosc: 20.0, kolor: "#ebf5fb" },
+        { nazwa: "Bliźnięta", dlugosc: 27.8, kolor: "#d5dbdb" } 
+    ];
+
+    const gwiazdyDane = [
+        { startRok: 1100, koniecRok: 3100, kolor: "#3498db" },
+        { startRok: 3100, koniecRok: 5300, kolor: "#9b59b6" },
+        { startRok: 5300, koniecRok: 7600, kolor: "#2ecc71" },
+        { startRok: 12000, koniecRok: 15000, kolor: "#f1c40f" },
+        { startRok: -4400, koniecRok: -2400, kolor: "#e74c3c" }
+    ];
+
+    function rysujTarcze() {
+        const cx = 175; 
+        const cy = 175;
+        const r = 175; 
+        const rZodiak = r - 8; // małe odsunięcie zodiaku, by zrobić miejsce na pierścień gwiazd
+
+        ctx.clearRect(0, 0, 350, 350);
+
+        let skumulowanyKat = 270; 
+
+        // 1. Rysowanie sektorów Zodiaku
+        for (let i = 0; i < zodiakDane.length; i++) {
+            let startAng = skumulowanyKat * Math.PI / 180;
+            let endAng = (skumulowanyKat + zodiakDane[i].dlugosc) * Math.PI / 180;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, rZodiak, startAng, endAng);
+            ctx.fillStyle = zodiakDane[i].kolor;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + rZodiak * Math.cos(startAng), cy + rZodiak * Math.sin(startAng));
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(startAng + ((zodiakDane[i].dlugosc / 2) * Math.PI / 180));
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#2c3e50";
+            ctx.font = "bold 9.5px Arial";
+            ctx.fillText(zodiakDane[i].nazwa, rZodiak - 12, 3.5);
+            ctx.restore();
+
+            skumulowanyKat += zodiakDane[i].dlugosc;
+        }
+
+        // 2. DODANA PĘTLA: Malowanie okresów panowania gwiazd kolorami na obwodzie
+        for (let k = 0; k < gwiazdyDane.length; k++) {
+            let g = gwiazdyDane[k];
+            let startAng = (270 + (g.startRok - 2000) / 72) * Math.PI / 180;
+            let endAng = (270 + (g.koniecRok - 2000) / 72) * Math.PI / 180;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r - 3, startAng, endAng);
+            ctx.strokeStyle = g.kolor;
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        }
+
+        // 3. Wskaźnik bazowy ROKU 2000
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx, cy - rZodiak); 
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - rZodiak + 2);
+        ctx.lineTo(cx - 5, cy - rZodiak + 13);
+        ctx.lineTo(cx + 5, cy - rZodiak + 13);
+        ctx.fill();
+        
+        ctx.font = "bold 8.5px Arial";
+        ctx.fillText("ROK 2000", cx - 48, cy - rZodiak + 22);
+
+        // 4. Podziałka 360 kresek
+        for (let j = 0; j < 360; j++) {
+            let ang = j * Math.PI / 180;
+            ctx.beginPath();
+            ctx.moveTo(cx + (rZodiak - 5) * Math.cos(ang), cy + (rZodiak - 5) * Math.sin(ang));
+            ctx.lineTo(cx + rZodiak * Math.cos(ang), cy + rZodiak * Math.sin(ang));
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
+    }
+
+    function aktualizujSymulacje() {
+        let kat = parseFloat(slider.value);
+        let przesuniecieLat = kat * 72;
+        let obliczonyRok = 2000 + Math.round(przesuniecieLat);
+
+        let rokTekst = obliczonyRok < 0 ? Math.abs(obliczonyRok) + " p.n.e." : obliczonyRok + " n.e.";
+
+        statusText.innerHTML = "Rok: " + rokTekst + " | Przesunięcie: " + kat.toFixed(1) + "° | Czas: " + Math.abs(Math.round(przesuniecieLat)) + " lat";
+        canvas.style.transform = "rotate(" + (-kat) + "deg)";
+    }
+
+    rysujTarcze();
+    slider.addEventListener('input', aktualizujSymulacje);
+    aktualizujSymulacje();
+</script>
+</body>
+</html>
