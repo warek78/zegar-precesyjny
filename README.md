@@ -1,10 +1,9 @@
 # Zegar Precesyjny – Krzyż Kardynalny (Precession Clock)
 
-[![DOI](https://zenodo.org)](https://doi.org)
-
 **Autor / Author:** Dariusz Płodzień  
-**Symulator na żywo / Live Demo:** [Uruchom w przeglądarce](https://github.io)  
-**Oficjalna publikacja (Zenodo):** https://doi.org
+**Otwórz koło precesyjne na żywo / Live Demo:** https://github.io  
+**Publikacja Zegar Precesyjny (Zenodo):** https://zenodo.org  
+**DOI Zegar Precesyjny:** 10.5281/zenodo.23764583
 
 ## Opis projektu (PL)
 Interaktywne narzędzie dydaktyczne oraz uproszczony, geometryczny zegar astronomiczny obrazujący pełny cykl precesji osi Ziemi (Rok Platoński – 25 920 lat) bez użycia przekładni zębatych.
@@ -22,7 +21,8 @@ A simplified, purely geometric astronomical clock and interactive educational si
 
 * **Biomechanical and Hydrostatic Self-Righting Mechanism in Fully Engorged *Ixodes ricinus* Females** (2026)  
   *Obserwacja terenowa biomechaniki i ciśnienia hydrostatycznego u opitej samicy kleszcza pospolitego (Borek Stary, Polska).*  
-  [![DOI](https://zenodo.org)](https://doi.org)
+  **Publikacja Kleszcze (Zenodo):** https://zenodo.org  
+  **DOI Kleszcze:** 10.5281/zenodo.23578647
 
 ---
 
