@@ -1,6 +1,7 @@
 # Zegar Precesyjny – Krzyż Kardynalny (Precession Clock)
 
-**Autor / Author:** Dariusz Płodzień  
+**Autor / Author:** Dariusz Płodzień  ( warek78 )
+
 **Otwórz koło precesyjne na żywo / Live Demo:** https://warek78.github.io/zegar-precesyjny/
 
 
